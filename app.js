@@ -12,6 +12,8 @@
     this.minRad         = options.minRad;
     this.maxRad         = options.maxRad;
     this.mouseRange     = 50;
+    this.clickRange     = 250;
+    this.distanceArray  = [0,0];
   }
 
   Circle.prototype.update = function() {
@@ -29,8 +31,12 @@
     this.x += this.velocityX;
     this.y += this.velocityY;
 
+    // Record distance from mouse
+    this.distanceArray.shift();
+    this.distanceArray.push(this.distanceFromMouse());
+
     // React to mouse position
-    if(this._horizontallyInRange() && this._verticallyInRange() && this._canGrow()) {
+    if(this._inMouseRange(this.mouseRange) && this._canGrow()) {
       this.radius += 1;
       this.colour = '#badc58';
     } else if(this._canShrink()) {
@@ -38,6 +44,12 @@
       if(this.radius === this.minRad) {
         this.colour = this.originalColour;
       }
+    }
+
+    // Reverse direction of circles within range on mousedown
+    if(mouse.down && this._inMouseRange(this.clickRange) && this._isApproachingMouse()) {
+      this.velocityX = -this.velocityX;
+      this.velocityY = -this.velocityY;
     }
 
     this._draw();    
@@ -50,12 +62,16 @@
     ctx.fill();    
   };
 
-  Circle.prototype._horizontallyInRange = function() {
-    return mouse.x - this.x < this.mouseRange && mouse.x - this.x > -this.mouseRange;    
+  Circle.prototype._horizontallyInRange = function(range) {
+    return mouse.x - this.x < range && mouse.x - this.x > -range;
   };
 
-  Circle.prototype._verticallyInRange = function() {
-    return mouse.y - this.y < this.mouseRange && mouse.y - this.y > -this.mouseRange;
+  Circle.prototype._verticallyInRange = function(range) {
+    return mouse.y - this.y < range && mouse.y - this.y > -range;
+  };
+
+  Circle.prototype._inMouseRange = function(range) {
+    return this._horizontallyInRange(range) && this._verticallyInRange(range);
   };
 
   Circle.prototype._canGrow = function() {
@@ -67,6 +83,16 @@
 
   Circle.prototype._canShrink = function() {
     return this.radius > this.minRad;
+  };
+
+  Circle.prototype.distanceFromMouse = function() {
+    const xDist = this.x - mouse.x;
+    const yDist = this.y - mouse.y;
+    return Math.sqrt(Math.pow(xDist, 2) + Math.pow(yDist, 2));
+  };
+
+  Circle.prototype._isApproachingMouse = function() {
+    return this.distanceArray[1] < this.distanceArray[0];
   };
 
   // UTILITY FUNCTIONS
@@ -102,7 +128,8 @@
   ];
   const mouse = {
     x: undefined,
-    y: undefined
+    y: undefined,
+    down: false
   }
   const circles = [];
   const canvas = document.getElementById('canvas');
@@ -114,6 +141,14 @@
   window.addEventListener('mousemove', function(event) {
     mouse.x = event.x;
     mouse.y = event.y;
+  });
+
+  window.addEventListener('mousedown', function(event) {
+    mouse.down = true;
+  });
+
+  window.addEventListener('mouseup', function(event) {
+    mouse.down = false;
   });
 
 
