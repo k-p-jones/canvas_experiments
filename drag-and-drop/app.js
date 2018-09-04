@@ -8,9 +8,9 @@
     this.colour = colour;
     this.ctx    = ctx;
 
-    this.draw = function() {
-      ctx.fillStyle = this.colour;
-      ctx.fillRect(this.x, this.y, this.height, this.width);          
+    this.draw = () => {
+      this.ctx.fillStyle = this.colour;
+      this.ctx.fillRect(this.x, this.y, this.height, this.width);
     };
   };
 
@@ -24,7 +24,7 @@
     this.ctx       = canvas.getContext('2d');
 
 
-    this.init = function() {
+    this.init = () => {
       // Set correct width and height
       this.canvas.width  = canvas.scrollWidth;
       this.canvas.height = canvas.scrollHeight;
